@@ -1,56 +1,36 @@
 package vsfm.mainapplication
 
-import vsfm.events._
-import vsfm.types._
-import vsfm.{BackendServer, Dispatcher}
+import util._
+import vsfm.uitools.ConsoleUi
 
 class MainApplication(name: String) {
 
-  private val ui = new Ui("Hauptanwendung " + name, this)
-  private var state: State = State(None, None, None)
+  var behavior: Behavior = DefaultBehavior
+  var state: State = State(None, None, None)
+  val consoleUi = new ConsoleUi(name, handleCommand)
 
-  object WithState {
-    def unapply[T](value: T): Option[(T, State)] =
-      Some(value, state)
+  def handleCommand(command: String) = {
+    val applyBehavior = BindPartial.snd[Action, State](state)
+      .andThenPartial(behavior.apply)
+      .andThen(reflectStateAndBehavior)
+
+    Commands.toAction
+      .andThenPartial(showHelp.orElse(applyBehavior))
+      .orElse(beep)(command)
   }
 
-  def loginNew: PartialFunction[String, Unit] = {
-    case WithState(room, State(None, _, _)) => updateState(state.copy(location = Some(Location(room))))
+  def showHelp: PartialFunction[Action, Unit] = {
+    case ShowHelpAction => consoleUi.appendStatus(Commands.all.mkString("\n"))
   }
 
-  def login(room: String) =
-    state match {
-      case State(None, _, _) => updateState(state.copy(location = Some(Location(room))))
-    }
+  def beep: PartialFunction[String, Unit] = {
+    case _ => consoleUi.appendStatus("beep")
+  }
 
-  def logout(): Unit =
-    state match {
-      case State(Some(_), _, _) => updateState(state.copy(location = None))
-    }
-
-  def loadProjects() =
-    state match {
-      case State(Some(_), _, _) => updateState(state.copy(projects = Some(BackendServer.allProjects), openedProject = None))
-    }
-
-  def openProject(id: Int) =
-    state match {
-      case State(Some(_), Some(projects), _) if projects.exists(_.id == id) =>
-        BackendServer.projectById(id).foreach { project =>
-          updateState(state.copy(openedProject = Some(project)))
-          Dispatcher.dispatch(ProjectOpened(id, state.location.get))
-        }
-    }
-
-  def closeProject() =
-    state match {
-      case State(Some(_), _, Some(_)) =>
-        updateState(state.copy(openedProject = None))
-        Dispatcher.dispatch(ProjectClosed(state.location.get))
-    }
-
-  private def updateState(newState: State) = {
+  def reflectStateAndBehavior(stateAndBehavior: (State, Behavior)): Unit = {
+    val (newState, newBehavior) = stateAndBehavior
     state = newState
-    ui.showState(state)
+    behavior = newBehavior
+    consoleUi.appendStatus(state.toString)
   }
 }

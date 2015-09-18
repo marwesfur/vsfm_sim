@@ -3,7 +3,7 @@ package vsfm.uitools
 import java.awt.{Dimension, BorderLayout}
 import javax.swing.{JScrollPane, JFrame, JTextArea}
 
-class ConsoleUi(name: String, onCommand: PartialFunction[String, Unit]) {
+class ConsoleUi(name: String, onCommand: String => Unit) {
 
   private val commandLine = new CommandLine(onCommandInternal)
   private val output = new JTextArea { setEditable(false) }
@@ -19,11 +19,7 @@ class ConsoleUi(name: String, onCommand: PartialFunction[String, Unit]) {
 
   private def onCommandInternal(command: String) = {
     output.append("> " + command + "\n")
-    onCommand.orElse(beep)(command)
-  }
-
-  private def beep: PartialFunction[String, Unit] = {
-    case failedCommand => appendStatus("beep")
+    onCommand(command)
   }
 
   def appendStatus(status: String) = {
