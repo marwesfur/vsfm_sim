@@ -10,17 +10,14 @@ class MainApplication(name: String) {
   val consoleUi = new ConsoleUi(name, handleCommand)
 
   def handleCommand(command: String) = {
-    val applyBehavior = BindPartial.snd[Action, State](state)
-      .andThenPartial(behavior.apply)
-      .andThen(reflectStateAndBehavior)
-
     Commands.toAction
-      .andThenPartial(showHelp.orElse(applyBehavior))
+      .andThen(action => (action, state))
+      .andThenPartial(showHelp.orElse(behavior.apply.andThen(reflectStateAndBehavior)))
       .orElse(beep)(command)
   }
 
-  def showHelp: PartialFunction[Action, Unit] = {
-    case ShowHelpAction => consoleUi.appendStatus(Commands.all.mkString("\n"))
+  def showHelp: PartialFunction[(Action, State), Unit] = {
+    case (ShowHelpAction, _) => consoleUi.appendStatus(Commands.all.mkString("\n"))
   }
 
   def beep: PartialFunction[String, Unit] = {
