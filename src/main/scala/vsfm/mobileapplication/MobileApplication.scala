@@ -1,44 +1,50 @@
 package vsfm.mobileapplication
 
+import util._
 import vsfm.events._
-import vsfm.types._
-import vsfm.{BackendServer, Dispatcher}
+import vsfm.uitools.ConsoleUi
 
 class MobileApplication(name: String) {
 
-  private val ui = new Ui("Tablet " + name, this)
-  private var state = State()
+  var state: State = State(None, None, Seq(), None)
+  var behavior: Behavior = new UnsynchronizedBehavior(handleDispatchedEvent)
+  val consoleUi = new ConsoleUi(name, handleCommand)
+  val proximitySensor = new ProximitySensor(name, handleGoingToDesk, handleLeavingDesk)
+
+  def handleCommand(command: String) = {
+    Commands.toAction
+      .andThen(action => (action, state))
+      .andThenPartial(showHelp.orElse(behavior.apply.andThen(reflectStateAndBehavior)))
+      .orElse(beep)(command)
+  }
+
+  def handleGoingToDesk(room: String): Unit = {
+    behavior.apply.andThen(reflectStateAndBehavior)(StartSyncAction(room), state)
+  }
+
+  def handleLeavingDesk(): Unit = {
+    behavior.apply.andThen(reflectStateAndBehavior)(StopSyncAction, state)
+  }
 
   def handleDispatchedEvent(event: Event) =
-   event match {
-     case ProjectOpened(id, _) => mainApplicationShowingProject(id)
-     case _ =>
-   }
+    event match {
+      case ProjectOpened(id, _) => behavior.apply.andThen(reflectStateAndBehavior)(SyncedProjectOpenedAction(id), state)
+      case ProjectClosed(_) => behavior.apply.andThen(reflectStateAndBehavior)(SyncedProjectClosedAction, state)
+      case _ =>
+    }
 
-  def mainApplicationShowingProject(id: Int) =
-    BackendServer.projectById(id)
-      .foreach { project =>
-        state = state.copy(synchronizedProject = Some(project))
-        ui.showProjectDetails(project)
-      }
+  def showHelp: PartialFunction[(Action, State), Unit] = {
+    case (ShowHelpAction, _) => consoleUi.appendStatus(Commands.all.mkString("\n"))
+  }
 
+  def beep: PartialFunction[String, Unit] = {
+    case _ => consoleUi.appendStatus("beep")
+  }
 
-
-  def goToDesk(room: String) =
-    ProximitySensor.enterPersonalZone(Location(room))
-
-  def leaveDesk(room: String) =
-    ProximitySensor.leavePersonalZone(Location(room))
-
-
-
-  object ProximitySensor {
-    val listener = handleDispatchedEvent _
-
-    def enterPersonalZone(location: Location) =
-      Dispatcher.subscribe(location, listener)
-
-    def leavePersonalZone(location: Location) =
-      Dispatcher.unsubscribe(location, listener)
+  def reflectStateAndBehavior(stateAndBehavior: (State, Behavior)): Unit = {
+    val (newState, newBehavior) = stateAndBehavior
+    state = newState
+    behavior = newBehavior
+    consoleUi.appendStatus(state.toString)
   }
 }

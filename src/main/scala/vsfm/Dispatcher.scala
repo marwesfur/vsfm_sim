@@ -18,9 +18,9 @@ object Dispatcher {
   }
 
 
-  def subscribe(location: Location, listener: (Event) => Unit) = {
+  def subscribe(location: Location, listener: (Event) => Unit): Option[ProjectOpened] = {
     listeners = listeners + (location -> (listeners.getOrElse(location, Seq()) :+ listener))
-    openedProjects.get(location).foreach { _.foreach(listener(_)) }
+    openedProjects.get(location).flatMap(res => res)
   }
 
   def unsubscribe(location: Location, listener: (Event) => Unit) =

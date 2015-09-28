@@ -1,10 +1,5 @@
 package vsfm.mobileapplication
 
-import vsfm.types.Project
+import vsfm.types.{Location, Project}
 
-case class State(synchronizedProject: Option[Project], rememberedProjects: Seq[Project], editingProject: Option[Project])
-
-object State {
-  def apply(): State =
-    apply(None, Seq(), None)
-}
+case class State(location: Option[Location], synchronizedProject: Option[Project], rememberedProjects: Seq[Project], editingProject: Option[Project])
