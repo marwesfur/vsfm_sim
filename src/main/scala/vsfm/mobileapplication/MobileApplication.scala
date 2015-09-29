@@ -1,51 +1,45 @@
 package vsfm.mobileapplication
 
-import notmvc.Action
+import notmvc.{Loop, Action}
 import util._
 import util.ui.ConsoleUi
 import vsfm.events._
 
 class MobileApplication(name: String) {
 
-  var state: MobileState = MobileState(None, None, Seq(), None)
-  var behavior: MobileBehavior = new UnsynchronizedBehavior(handleDispatchedEvent)
   val consoleUi = new ConsoleUi(name, handleCommand)
   val proximitySensor = new ProximitySensor(name, handleGoingToDesk, handleLeavingDesk)
+  val loop = new Loop(MobileState(None, None, Seq(), None), new UnsynchronizedBehavior(handleDispatchedEvent), renderState)
 
   def handleCommand(command: String) = {
     Commands.toAction
-      .andThen(action => (action, state))
-      .andThenPartial(showHelp.orElse(behavior.apply.andThen(reflectStateAndBehavior)))
+      .andThenPartial(showHelp.orElse(loop.handleAction))
       .orElse(beep)(command)
   }
 
   def handleGoingToDesk(room: String): Unit = {
-    behavior.apply.andThen(reflectStateAndBehavior)(StartSyncAction(room), state)
+    loop.handleAction(StartSyncAction(room))
   }
 
   def handleLeavingDesk(): Unit = {
-    behavior.apply.andThen(reflectStateAndBehavior)(StopSyncAction, state)
+    loop.handleAction(StopSyncAction)
   }
 
-  def handleDispatchedEvent(event: Event) =
+  def handleDispatchedEvent(event: Event): Unit =
     event match {
-      case ProjectOpened(id, _) => behavior.apply.andThen(reflectStateAndBehavior)(SyncedProjectOpenedAction(id), state)
-      case ProjectClosed(_) => behavior.apply.andThen(reflectStateAndBehavior)(SyncedProjectClosedAction, state)
+      case ProjectOpened(id, _) => loop.handleAction(SyncedProjectOpenedAction(id))
+      case ProjectClosed(_) => loop.handleAction(SyncedProjectClosedAction)
       case _ =>
     }
 
-  def showHelp: PartialFunction[(Action, MobileState), Unit] = {
-    case (ShowHelpAction, _) => consoleUi.appendStatus(Commands.all.mkString("\n"))
+  def showHelp: PartialFunction[Action, Unit] = {
+    case ShowHelpAction => consoleUi.appendStatus(Commands.all.mkString("\n"))
   }
 
   def beep: PartialFunction[String, Unit] = {
     case _ => consoleUi.appendStatus("beep")
   }
 
-  def reflectStateAndBehavior(stateAndBehavior: (MobileState, MobileBehavior)): Unit = {
-    val (newState, newBehavior) = stateAndBehavior
-    state = newState
-    behavior = newBehavior
+  def renderState(state: MobileState): Unit =
     consoleUi.appendStatus(state.toString)
-  }
 }

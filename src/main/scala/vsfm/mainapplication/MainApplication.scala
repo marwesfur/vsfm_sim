@@ -11,12 +11,12 @@ class MainApplication(name: String) {
 
   def handleCommand(command: String) = {
     Commands.toAction
-      .andThenPartial(loop.handleAction)
+      .andThenPartial(showHelp.orElse(loop.handleAction))
       .orElse(beep)(command)
   }
 
-  def showHelp: PartialFunction[(Action, MainState), Unit] = {
-    case (ShowHelpAction, _) => consoleUi.appendStatus(Commands.all.mkString("\n"))
+  def showHelp: PartialFunction[Action, Unit] = {
+    case ShowHelpAction => consoleUi.appendStatus(Commands.all.mkString("\n"))
   }
 
   def beep: PartialFunction[String, Unit] = {
