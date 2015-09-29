@@ -1,5 +1,7 @@
 package vsfm.mainapplication
 
+import notmvc.Action
+
 object Commands {
   val login = """login at (.+)""".r
   val logout = """logout""".r

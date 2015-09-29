@@ -1,9 +1,9 @@
 package vsfm.mobileapplication
 
-import vsfm.uitools.ConsoleUi
+import util.ui.ConsoleUi
 
 class ProximitySensor(name: String, onEnter: String => Unit, onExit: () => Unit) {
-  val consoleUi = new ConsoleUi(name + " (Sensor)", handleCommand)
+  val consoleUi = new ConsoleUi(name + " (Proximity sensor)", handleCommand)
   val gotoDesk = """go to desk at (.+)""".r
   val leaveDesk = """leave desk""".r
 

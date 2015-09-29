@@ -1,7 +1,7 @@
-package vsfm.uitools
+package util.ui
 
-import java.awt.{Dimension, BorderLayout}
-import javax.swing.{JScrollPane, JFrame, JTextArea}
+import java.awt.{BorderLayout, Dimension}
+import javax.swing.{JFrame, JScrollPane, JTextArea}
 
 class ConsoleUi(name: String, onCommand: String => Unit) {
 

@@ -1,5 +1,7 @@
 package vsfm.mobileapplication
 
+import notmvc.Action
+
 object Commands {
   val remember = """remember""".r
   val startEdit = """edit (\d+)""".r

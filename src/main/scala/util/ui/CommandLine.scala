@@ -1,4 +1,4 @@
-package vsfm.uitools
+package util.ui
 
 import java.awt.event._
 import javax.swing.JTextField

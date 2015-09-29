@@ -1,12 +1,13 @@
 package vsfm.mainapplication
 
+import notmvc._
 import util._
-import vsfm.uitools.ConsoleUi
+import util.ui.ConsoleUi
 
 class MainApplication(name: String) {
 
-  var behavior: Behavior = DefaultBehavior
-  var state: State = State(None, None, None)
+  var behavior: MainBehavior = DefaultBehavior
+  var state: MainState = MainState(None, None, None)
   val consoleUi = new ConsoleUi(name, handleCommand)
 
   def handleCommand(command: String) = {
@@ -16,7 +17,7 @@ class MainApplication(name: String) {
       .orElse(beep)(command)
   }
 
-  def showHelp: PartialFunction[(Action, State), Unit] = {
+  def showHelp: PartialFunction[(Action, MainState), Unit] = {
     case (ShowHelpAction, _) => consoleUi.appendStatus(Commands.all.mkString("\n"))
   }
 
@@ -24,7 +25,7 @@ class MainApplication(name: String) {
     case _ => consoleUi.appendStatus("beep")
   }
 
-  def reflectStateAndBehavior(stateAndBehavior: (State, Behavior)): Unit = {
+  def reflectStateAndBehavior(stateAndBehavior: (MainState, MainBehavior)): Unit = {
     val (newState, newBehavior) = stateAndBehavior
     state = newState
     behavior = newBehavior

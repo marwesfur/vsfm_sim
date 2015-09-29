@@ -1,6 +1,6 @@
 package vsfm.mobileapplication
 
-trait Action
+import notmvc.Action
 
 case class StartEditAction(id: Int) extends Action
 object CommitEditAction extends Action

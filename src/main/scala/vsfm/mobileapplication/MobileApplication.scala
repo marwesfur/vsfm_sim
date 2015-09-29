@@ -1,13 +1,14 @@
 package vsfm.mobileapplication
 
+import notmvc.Action
 import util._
+import util.ui.ConsoleUi
 import vsfm.events._
-import vsfm.uitools.ConsoleUi
 
 class MobileApplication(name: String) {
 
-  var state: State = State(None, None, Seq(), None)
-  var behavior: Behavior = new UnsynchronizedBehavior(handleDispatchedEvent)
+  var state: MobileState = MobileState(None, None, Seq(), None)
+  var behavior: MobileBehavior = new UnsynchronizedBehavior(handleDispatchedEvent)
   val consoleUi = new ConsoleUi(name, handleCommand)
   val proximitySensor = new ProximitySensor(name, handleGoingToDesk, handleLeavingDesk)
 
@@ -33,7 +34,7 @@ class MobileApplication(name: String) {
       case _ =>
     }
 
-  def showHelp: PartialFunction[(Action, State), Unit] = {
+  def showHelp: PartialFunction[(Action, MobileState), Unit] = {
     case (ShowHelpAction, _) => consoleUi.appendStatus(Commands.all.mkString("\n"))
   }
 
@@ -41,7 +42,7 @@ class MobileApplication(name: String) {
     case _ => consoleUi.appendStatus("beep")
   }
 
-  def reflectStateAndBehavior(stateAndBehavior: (State, Behavior)): Unit = {
+  def reflectStateAndBehavior(stateAndBehavior: (MobileState, MobileBehavior)): Unit = {
     val (newState, newBehavior) = stateAndBehavior
     state = newState
     behavior = newBehavior

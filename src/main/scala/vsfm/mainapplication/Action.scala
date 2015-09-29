@@ -1,6 +1,6 @@
 package vsfm.mainapplication
 
-trait Action
+import notmvc.Action
 
 case class LoginAction(room: String) extends Action
 object LogoutAction extends Action
