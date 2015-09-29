@@ -4,16 +4,35 @@ import notmvc._
 import util._
 import util.ui.ConsoleUi
 
+class Loop(initialBehavior: MainBehavior, initialState: MainState, renderState: MainState => Unit) {
+
+  var behavior: MainBehavior = initialBehavior
+  var state: MainState = initialState
+
+  def handleAction = new PartialFunction[Action, Unit] {
+    override def isDefinedAt(action: Action): Boolean =
+      behavior.apply.isDefinedAt(action, state)
+
+    override def apply(action: Action): Unit =
+      behavior.apply.andThen(reflectStateAndBehavior)(action, state)
+  }
+
+  def reflectStateAndBehavior(stateAndBehavior: (MainState, MainBehavior)) = {
+    val (newState, newBehavior) = stateAndBehavior
+    state = newState
+    behavior = newBehavior
+    renderState(state)
+  }
+}
+
 class MainApplication(name: String) {
 
-  var behavior: MainBehavior = DefaultBehavior
-  var state: MainState = MainState(None, None, None)
   val consoleUi = new ConsoleUi(name, handleCommand)
+  val loop = new Loop(DefaultBehavior, MainState(None, None, None), renderState)
 
   def handleCommand(command: String) = {
     Commands.toAction
-      .andThen(action => (action, state))
-      .andThenPartial(showHelp.orElse(behavior.apply.andThen(reflectStateAndBehavior)))
+      .andThenPartial(loop.handleAction)
       .orElse(beep)(command)
   }
 
@@ -25,10 +44,6 @@ class MainApplication(name: String) {
     case _ => consoleUi.appendStatus("beep")
   }
 
-  def reflectStateAndBehavior(stateAndBehavior: (MainState, MainBehavior)): Unit = {
-    val (newState, newBehavior) = stateAndBehavior
-    state = newState
-    behavior = newBehavior
+  def renderState(state: MainState): Unit =
     consoleUi.appendStatus(state.toString)
-  }
 }
