@@ -24,5 +24,9 @@ class MainApplication(name: String) {
   }
 
   def renderState(state: MainState): Unit =
-    consoleUi.appendStatus(state.toString)
+    consoleUi
+      .appendStatus("Angemeldet bei Ort: " + state.location.map(_.name).getOrElse("nicht angemeldet"))
+      .appendStatus("Projektliste: " + state.projects)
+      .appendStatus("Projektdetails: " + state.openedProject)
+      .appendStatus("-----")
 }

@@ -5,6 +5,8 @@ class Loop[TState <: State](initialState: TState, initialBehavior: Behavior[TSta
   var behavior: Behavior[TState] = initialBehavior
   var state: TState = initialState
 
+  renderState(state)
+
   def handleAction = new PartialFunction[Action, Unit] {
     override def isDefinedAt(action: Action): Boolean =
       behavior.apply.isDefinedAt(action, state)

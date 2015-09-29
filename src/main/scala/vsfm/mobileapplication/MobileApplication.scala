@@ -41,5 +41,10 @@ class MobileApplication(name: String) {
   }
 
   def renderState(state: MobileState): Unit =
-    consoleUi.appendStatus(state.toString)
+    consoleUi
+      .appendStatus("Ort: " + state.location.map(_.name).getOrElse("nicht synchronisiert"))
+      .appendStatus("Synchronisiertes Projekt: " + state.synchronizedProject)
+      .appendStatus("Vorgemerkte Projekte: " + state.rememberedProjects)
+      .appendStatus("Projekt in Bearbeitung: " + state.editingProject)
+      .appendStatus("-----")
 }
