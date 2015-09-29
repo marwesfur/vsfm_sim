@@ -4,31 +4,10 @@ import notmvc._
 import util._
 import util.ui.ConsoleUi
 
-class Loop(initialBehavior: MainBehavior, initialState: MainState, renderState: MainState => Unit) {
-
-  var behavior: MainBehavior = initialBehavior
-  var state: MainState = initialState
-
-  def handleAction = new PartialFunction[Action, Unit] {
-    override def isDefinedAt(action: Action): Boolean =
-      behavior.apply.isDefinedAt(action, state)
-
-    override def apply(action: Action): Unit =
-      behavior.apply.andThen(reflectStateAndBehavior)(action, state)
-  }
-
-  def reflectStateAndBehavior(stateAndBehavior: (MainState, MainBehavior)) = {
-    val (newState, newBehavior) = stateAndBehavior
-    state = newState
-    behavior = newBehavior
-    renderState(state)
-  }
-}
-
 class MainApplication(name: String) {
 
   val consoleUi = new ConsoleUi(name, handleCommand)
-  val loop = new Loop(DefaultBehavior, MainState(None, None, None), renderState)
+  val loop = new Loop(MainState(None, None, None), DefaultBehavior, renderState)
 
   def handleCommand(command: String) = {
     Commands.toAction
