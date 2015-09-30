@@ -17,6 +17,8 @@ object LoggedInBehavior extends MainBehavior {
 
   override def apply: PartialFunction[(Action, MainState), (MainState, MainBehavior)] = {
     case (LogoutAction, state) =>
+      if (state.openedProject.isDefined)
+        Dispatcher.dispatch(ProjectClosed(state.location.get))
       (state.copy(location = None, projects = None, openedProject = None), DefaultBehavior)
 
     case (LoadProjectsAction, state) =>

@@ -4,7 +4,7 @@ import vsfm.types.Project
 
 object BackendServer {
 
-  private var projects = Seq(Project(1, "Auto"), Project(2, "Fahrrad"))
+  private var projects = Seq(Project(1, "Auto"), Project(2, "Fahrrad"), Project(3, "Bobby-Car"))
 
   def allProjects = projects
 
