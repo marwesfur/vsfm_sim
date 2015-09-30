@@ -15,10 +15,10 @@ Möglicher Ablauf:
 * T1: Erstes Tablet
 * S1: Näherungssensor des ersten Tablets
 
-Akteuer | Befehl | Bedeutung
------------------------------
-H1      | login at Besprechungsraum | Teamleiter (TL) meldet sich an 
-H1      | load projects             | TL lädt Projektübersicht
+Akteuer | Befehl                         | Bedeutung
+--------|--------------------------------|-----------
+H1      | login at Besprechungsraum      | Teamleiter (TL) meldet sich an 
+H1      | load projects                  | TL lädt Projektübersicht
 S1      | go to desk at Besprechungsraum | Erster Projektverantwortlicher (PV) tritt ans Pult
 H1      | open project 1                 | PV öffnet sein erstes Projekt (wird auf Tablet synchronisiert)
 H1      | open project 2                 | PV öffnet sein zweites Projekt (wird auf Tablet synchronisiert)
